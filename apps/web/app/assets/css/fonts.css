@@ -1,0 +1,7 @@
+@theme {
+  --font-sans: 'Geist', Arial, ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  --font-serif: ui-serif, 'Playfair Display', Georgia, 'Times New Roman', serif;
+}

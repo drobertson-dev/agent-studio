@@ -1,0 +1,53 @@
+{
+  "name": "agent-studio",
+  "version": "0.1.0",
+  "description": "Self-hosted AI application studio with a Nuxt chat UI, DeepAgents/LangGraph runtime, live sites, runtime API routes, and Docker Compose deployment.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "author": "David Robertson",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drobertson-dev/agent-studio.git"
+  },
+  "bugs": {
+    "url": "https://github.com/drobertson-dev/agent-studio/issues"
+  },
+  "homepage": "https://github.com/drobertson-dev/agent-studio#readme",
+  "keywords": [
+    "agent-studio",
+    "ai-app-builder",
+    "agent-runtime",
+    "self-hosted",
+    "langgraph",
+    "deepagents",
+    "nuxt",
+    "docker-compose"
+  ],
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=10.32.0"
+  },
+  "scripts": {
+    "dev": "docker compose up --build",
+    "up": "docker compose up -d --build",
+    "down": "docker compose down",
+    "logs": "docker compose logs -f",
+    "build": "pnpm run web:build && pnpm run compose:build",
+    "lint": "pnpm run web:lint && pnpm run runtime:lint",
+    "compose:config": "docker compose --env-file .env.example config",
+    "compose:build": "docker compose build runtime admin",
+    "compose:up": "docker compose up -d --build",
+    "compose:down": "docker compose down",
+    "compose:logs": "docker compose logs -f",
+    "web:test": "pnpm --dir apps/web test -- --run",
+    "web:build": "pnpm --dir apps/web build",
+    "web:lint": "pnpm --dir apps/web lint",
+    "runtime:test": "cd apps/runtime && uv run --python 3.13 --extra dev pytest -q",
+    "runtime:lint": "cd apps/runtime && uv run --python 3.13 --extra dev ruff check src tests",
+    "test": "pnpm run web:test && pnpm run runtime:test",
+    "release:check": "pnpm run lint && pnpm run test && pnpm run web:build && pnpm run compose:config",
+    "verify": "pnpm run release:check"
+  },
+  "packageManager": "pnpm@10.32.0"
+}

@@ -1,0 +1,12 @@
+{
+  "dependencies": [
+    "."
+  ],
+  "graphs": {
+    "agent": "./src/agent_studio/app/agent.py:agent"
+  },
+  "env": ".env",
+  "python_version": "3.13",
+  "pip_installer": "uv",
+  "image_distro": "wolfi"
+}

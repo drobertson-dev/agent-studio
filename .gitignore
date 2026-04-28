@@ -1,0 +1,15 @@
+.DS_Store
+._*
+.env
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+node_modules/
+.nuxt/
+.output/
+dist/
+coverage/
+playwright-report/
+test-results/

@@ -1,0 +1,10 @@
+node_modules
+.nuxt
+.output
+.agents
+.env
+.DS_Store
+._*
+playwright-report
+test-results
+coverage

@@ -1,0 +1,16 @@
+{$APP_DOMAIN::80} {
+	encode zstd gzip
+
+	handle /runtime-api* {
+		reverse_proxy runtime:8000
+	}
+
+	@admin_host header_regexp Host {$ADMIN_HOST_REGEX:^(localhost|127\.0\.0\.1|admin\.localhost|admin\.agent-studio\.orb\.local|admin\..+)(:\d+)?$}
+	handle @admin_host {
+		reverse_proxy admin:3000
+	}
+
+	handle {
+		reverse_proxy runtime:8000
+	}
+}

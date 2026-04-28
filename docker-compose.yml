@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-langgraph}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-langgraph}
+      POSTGRES_DB: ${POSTGRES_DB:-langgraph}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  runtime:
+    build:
+      context: ./apps/runtime
+    restart: unless-stopped
+    environment:
+      DATABASE_URI: postgres://${POSTGRES_USER:-langgraph}:${POSTGRES_PASSWORD:-langgraph}@postgres:5432/${POSTGRES_DB:-langgraph}
+      REDIS_URI: redis://redis:6379
+      DEFAULT_AGENT_MODEL: ${DEFAULT_AGENT_MODEL:-anthropic:claude-opus-4-6}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      WORKSPACE_ROOT: /workspace
+      DEV_MODE: "false"
+      ADMIN_HOSTS: ${ADMIN_HOSTS:-localhost,127.0.0.1,admin.localhost,admin.agent-studio.orb.local}
+      SITE_DOMAIN_SUFFIXES: ${SITE_DOMAIN_SUFFIXES:-localhost,agent-studio.orb.local}
+      DEFAULT_SITE: ${DEFAULT_SITE:-}
+      DEFAULT_SITE_HOSTS: ${DEFAULT_SITE_HOSTS:-}
+    volumes:
+      - runtime_workspace:/workspace
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8000/info >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  admin:
+    build:
+      context: ./apps/web
+    restart: unless-stopped
+    environment:
+      LANGGRAPH_API_URL: http://runtime:8000
+      STUDIO_PASSWORD: ${STUDIO_PASSWORD:-agent-studio}
+      AUTH_SECRET: ${AUTH_SECRET:-change-me-in-production}
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+    depends_on:
+      runtime:
+        condition: service_healthy
+    expose:
+      - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://localhost:3000/api/auth/session').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:-:80}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+      ADMIN_HOST_REGEX: ${ADMIN_HOST_REGEX:-^(localhost|127\.0\.0\.1|admin\.localhost|admin\.agent-studio\.orb\.local|admin\..+)(:\d+)?$}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      admin:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:
+  runtime_workspace:
+  caddy_data:
+  caddy_config:

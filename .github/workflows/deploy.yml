@@ -1,0 +1,161 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: vm-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/home/ubuntu/agent-studio' }}
+      SSH_PORT: ${{ vars.VM_SSH_PORT || vars.ORACLE_SSH_PORT || '22' }}
+      DEFAULT_AGENT_MODEL: ${{ vars.DEFAULT_AGENT_MODEL || 'anthropic:claude-opus-4-6' }}
+      VM_HOST: ${{ secrets.VM_HOST || secrets.ORACLE_HOST }}
+      VM_USER: ${{ secrets.VM_USER || secrets.ORACLE_USER }}
+      VM_SSH_KEY: ${{ secrets.VM_SSH_KEY || secrets.ORACLE_SSH_KEY }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment secrets
+        shell: bash
+        env:
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          STUDIO_PASSWORD: ${{ secrets.STUDIO_PASSWORD }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ADMIN_HOST_REGEX: ${{ secrets.ADMIN_HOST_REGEX }}
+          ADMIN_HOSTS: ${{ secrets.ADMIN_HOSTS }}
+          SITE_DOMAIN_SUFFIXES: ${{ secrets.SITE_DOMAIN_SUFFIXES }}
+          DEFAULT_SITE: ${{ secrets.DEFAULT_SITE }}
+          DEFAULT_SITE_HOSTS: ${{ secrets.DEFAULT_SITE_HOSTS }}
+        run: |
+          missing=0
+          required=(
+            VM_HOST
+            VM_USER
+            VM_SSH_KEY
+            APP_DOMAIN
+            STUDIO_PASSWORD
+            AUTH_SECRET
+            POSTGRES_PASSWORD
+          )
+
+          for name in "${required[@]}"; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: ${name}"
+              missing=1
+            fi
+          done
+
+          if [ -z "${ANTHROPIC_API_KEY}" ] && [ -z "${OPENAI_API_KEY}" ]; then
+            echo "::error::Set at least one model provider secret: ANTHROPIC_API_KEY or OPENAI_API_KEY"
+            missing=1
+          fi
+
+          exit "${missing}"
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          install -m 600 /dev/null ~/.ssh/vm_deploy_key
+          printf '%s\n' "${VM_SSH_KEY}" > ~/.ssh/vm_deploy_key
+          ssh-keyscan -p "${SSH_PORT}" -H "${VM_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Verify remote Docker
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/vm_deploy_key -p "${SSH_PORT}" "${VM_USER}@${VM_HOST}" \
+            'docker --version && docker compose version'
+
+      - name: Create deployment archive
+        shell: bash
+        run: |
+          tar \
+            --exclude='.git' \
+            --exclude='.env' \
+            --exclude='.DS_Store' \
+            --exclude='._*' \
+            --exclude='.nuxt' \
+            --exclude='.output' \
+            --exclude='.venv' \
+            --exclude='__pycache__' \
+            --exclude='node_modules' \
+            --exclude='coverage' \
+            --exclude='playwright-report' \
+            --exclude='test-results' \
+            -czf /tmp/agent-studio.tgz .
+
+      - name: Upload application
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/vm_deploy_key -p "${SSH_PORT}" "${VM_USER}@${VM_HOST}" \
+            "mkdir -p '${DEPLOY_PATH}/releases'"
+          scp -i ~/.ssh/vm_deploy_key -P "${SSH_PORT}" \
+            /tmp/agent-studio.tgz \
+            "${VM_USER}@${VM_HOST}:${DEPLOY_PATH}/releases/source.tgz"
+
+      - name: Upload environment file
+        shell: bash
+        env:
+          APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
+          ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+          STUDIO_PASSWORD: ${{ secrets.STUDIO_PASSWORD }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          umask 077
+          cat > /tmp/agent-studio.env <<EOF
+APP_DOMAIN=${APP_DOMAIN}
+ACME_EMAIL=${ACME_EMAIL}
+ADMIN_HOST_REGEX=${ADMIN_HOST_REGEX}
+ADMIN_HOSTS=${ADMIN_HOSTS}
+SITE_DOMAIN_SUFFIXES=${SITE_DOMAIN_SUFFIXES}
+DEFAULT_SITE=${DEFAULT_SITE}
+DEFAULT_SITE_HOSTS=${DEFAULT_SITE_HOSTS}
+STUDIO_PASSWORD=${STUDIO_PASSWORD}
+AUTH_SECRET=${AUTH_SECRET}
+POSTGRES_USER=langgraph
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=langgraph
+DEFAULT_AGENT_MODEL=${DEFAULT_AGENT_MODEL}
+ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+OPENAI_API_KEY=${OPENAI_API_KEY}
+EOF
+
+          scp -i ~/.ssh/vm_deploy_key -P "${SSH_PORT}" \
+            /tmp/agent-studio.env \
+            "${VM_USER}@${VM_HOST}:${DEPLOY_PATH}/.env"
+
+      - name: Deploy with Docker Compose
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/vm_deploy_key -p "${SSH_PORT}" "${VM_USER}@${VM_HOST}" \
+            "DEPLOY_PATH='${DEPLOY_PATH}' bash -s" <<'EOF'
+          set -euo pipefail
+
+          cd "${DEPLOY_PATH}"
+          tar -xzf releases/source.tgz -C "${DEPLOY_PATH}"
+
+          export COMPOSE_PROJECT_NAME=agent_studio
+
+          docker compose up -d --build --remove-orphans
+          docker image prune -f
+          docker compose ps
+          EOF

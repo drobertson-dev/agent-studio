@@ -1,0 +1,48 @@
+[project]
+name = "agent-studio"
+version = "0.1.0"
+description = "Self-hosted Agent Studio runtime built on FastAPI, DeepAgents, and LangGraph."
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+  "deepagents==0.4.1",
+  "fastapi>=0.116.0",
+  "langchain>=1.2.0",
+  "langchain-anthropic==1.3.3",
+  "langchain-core>=1.2.6",
+  "langchain-openai>=1.2.0",
+  "langgraph==1.1.9",
+  "langgraph-checkpoint==4.0.2",
+  "langgraph-prebuilt==1.0.10",
+  "psycopg[binary]>=3.2.0",
+  "pydantic>=2.7.0",
+  "pydantic-settings>=2.4.0",
+  "starlette>=0.47.0",
+  "uvicorn[standard]>=0.35.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.4.2",
+  "ruff==0.15.1",
+]
+
+[build-system]
+requires = ["setuptools>=73.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["agent_studio*"]
+
+[tool.ruff]
+lint.select = ["E", "F", "I", "UP", "T201"]
+lint.ignore = ["E501"]
+include = ["*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
