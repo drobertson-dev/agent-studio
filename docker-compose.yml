@@ -86,6 +86,8 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
+    labels:
+      dev.orbstack.domains: "*.agent-studio.orb.local"
     environment:
       APP_DOMAIN: ${APP_DOMAIN:-:80}
       ACME_EMAIL: ${ACME_EMAIL:-}

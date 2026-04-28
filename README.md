@@ -50,7 +50,7 @@ Open `http://localhost`, log in with `STUDIO_PASSWORD`, and send the starter pro
 - `http://welcome.localhost`
 - `http://localhost/runtime-api/health`
 
-For OrbStack, the admin service is intended to be used as `admin.agent-studio.orb.local`. The Caddy edge also keeps `localhost` routed to the admin UI for simple local use.
+For OrbStack, the admin service is intended to be used as `admin.agent-studio.orb.local`. The Caddy service claims `*.agent-studio.orb.local`, so generated sites are available at `https://<site-name>.agent-studio.orb.local/` without editing `/etc/hosts`.
 
 ## Public Site Routing
 
@@ -80,6 +80,8 @@ is available at:
 http://acme.localhost/
 https://acme.agent-studio.orb.local/
 ```
+
+OrbStack wildcard domains are provided by the Caddy service label in `docker-compose.yml`. If you rename the compose project or local base domain, update both `SITE_DOMAIN_SUFFIXES` and that label together.
 
 For real customer domains, add a `site.json` beside the site's `index.html`:
 
