@@ -1,0 +1,12 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+.git
+.github
+node_modules
+**/node_modules
+**/.nuxt
+**/.output
+**/__pycache__
+apps/runtime/.venv

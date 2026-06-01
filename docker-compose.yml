@@ -59,7 +59,8 @@ services:
 
   admin:
     build:
-      context: ./apps/web
+      context: .
+      dockerfile: apps/web/Dockerfile
     restart: unless-stopped
     environment:
       LANGGRAPH_API_URL: http://runtime:8000
