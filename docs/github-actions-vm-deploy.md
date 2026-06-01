@@ -2,10 +2,9 @@
 
 This repo deploys to a Linux VM with `.github/workflows/deploy.yml`.
 
-The workflow runs on every push to `main` and can also be started manually from
-the GitHub Actions tab. It packages the repository from the GitHub runner,
-uploads it to the VM over SSH, writes the production `.env` from GitHub
-secrets, and runs:
+The workflow is started manually from the GitHub Actions tab. It packages the
+repository from the GitHub runner, uploads it to the VM over SSH, writes the
+production `.env` from GitHub secrets, and runs:
 
 ```bash
 docker compose up -d --build --remove-orphans
@@ -81,7 +80,7 @@ If omitted, the workflow uses those defaults.
 
 ## First Deploy
 
-After the secrets are set, push to `main` or run the workflow manually:
+After the secrets are set, run the workflow manually:
 
 `Actions` -> `Deploy to VM` -> `Run workflow`
 

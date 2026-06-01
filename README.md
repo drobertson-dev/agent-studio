@@ -1,5 +1,11 @@
 # Agent Studio
 
+[![Release](https://img.shields.io/github/v/release/drobertson-dev/agent-studio?sort=semver)](https://github.com/drobertson-dev/agent-studio/releases)
+[![CI](https://github.com/drobertson-dev/agent-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/drobertson-dev/agent-studio/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue)](apps/runtime/pyproject.toml)
+[![Node >=22](https://img.shields.io/badge/node-%3E%3D22-green)](package.json)
+
 Agent Studio is a self-hosted AI application studio: a Docker-deployable runtime plus a Nuxt chat UI where an agent can build and operate websites, dashboards, API routes, workflows, artifacts, and specialized agent apps.
 
 The basic idea is "WordPress for the AI age." You start the stack, log in to the studio, and ask the agent to build inside the already-running workspace. The agent can create static sites, add Python API routes, connect to the configured database, and keep iterating without a separate cloud platform.
@@ -50,6 +56,12 @@ Agent Studio is intended to support two product shapes:
 - **Agent App Mode:** specialize the repo into a focused agent application with domain-specific tools, prompts, evals, and UI copy.
 
 The current repo is the reusable host. Specialized agents can be built on top of it.
+
+## Project Status
+
+Current release: `v0.1.0`
+
+Agent Studio is early but usable. The initial release focuses on the self-hosted runtime, admin UI, host-based site publishing, dynamic API routes, persistence, Docker Compose deployment, and clear local development flows. Public APIs and internal extension points may change before `v1.0.0`.
 
 ## Quick Start
 
@@ -328,3 +340,7 @@ pnpm run verify
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## Contributing
+
+Issues, ideas, and small focused pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md), [CHANGELOG.md](CHANGELOG.md), and [docs/release-process.md](docs/release-process.md).
