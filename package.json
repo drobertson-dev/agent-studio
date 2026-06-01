@@ -4,7 +4,7 @@
   "description": "Self-hosted AI application studio with a Nuxt chat UI, DeepAgents/LangGraph runtime, live sites, runtime API routes, and Docker Compose deployment.",
   "private": true,
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": "David Robertson",
   "repository": {
     "type": "git",

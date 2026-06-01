@@ -2,7 +2,7 @@
 
 This repo deploys to a Linux VM with `.github/workflows/deploy.yml`.
 
-The workflow runs on every push to `master` and can also be started manually from
+The workflow runs on every push to `main` and can also be started manually from
 the GitHub Actions tab. It packages the repository from the GitHub runner,
 uploads it to the VM over SSH, writes the production `.env` from GitHub
 secrets, and runs:
@@ -19,6 +19,17 @@ docker compose up -d --build --remove-orphans
 - DNS points the admin host and public site hosts to the VM public IP.
 
 For the default Ubuntu image, the SSH user is usually `ubuntu`.
+
+## TLS / Edge Assumption
+
+The default deployment uses `APP_DOMAIN=:80`, which is best when another edge
+layer handles HTTPS and forwards HTTP to the Docker host. That can be a
+platform proxy, Cloudflare, Coolify, or another reverse proxy.
+
+Stock Caddy can manage certificates directly for fixed hostnames such as
+`admin.example.com,example.com,www.example.com`. Dynamic wildcard HTTPS for
+`*.example.com` requires an external wildcard TLS layer or a Caddy build
+configured for DNS-challenge certificates.
 
 ## Required GitHub Secrets
 
@@ -70,8 +81,29 @@ If omitted, the workflow uses those defaults.
 
 ## First Deploy
 
-After the secrets are set, push to `master` or run the workflow manually:
+After the secrets are set, push to `main` or run the workflow manually:
 
 `Actions` -> `Deploy to VM` -> `Run workflow`
 
 The first deploy will take longer because Docker builds both app images.
+
+## DNS Shape
+
+Use one host for the studio admin UI and separate hosts for generated sites:
+
+```text
+admin.example.com -> Studio UI
+*.example.com     -> generated sites
+example.com       -> optional default site
+```
+
+For that setup:
+
+```text
+ADMIN_HOST_REGEX=^(admin\.example\.com)(:\d+)?$
+ADMIN_HOSTS=admin.example.com
+SITE_DOMAIN_SUFFIXES=example.com
+```
+
+Generated files under `/workspace/sites/acme/index.html` will be served from
+`https://acme.example.com/`.

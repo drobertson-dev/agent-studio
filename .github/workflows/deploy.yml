@@ -52,6 +52,9 @@ jobs:
             STUDIO_PASSWORD
             AUTH_SECRET
             POSTGRES_PASSWORD
+            ADMIN_HOST_REGEX
+            ADMIN_HOSTS
+            SITE_DOMAIN_SUFFIXES
           )
 
           for name in "${required[@]}"; do
@@ -114,9 +117,15 @@ jobs:
         env:
           APP_DOMAIN: ${{ secrets.APP_DOMAIN }}
           ACME_EMAIL: ${{ secrets.ACME_EMAIL }}
+          ADMIN_HOST_REGEX: ${{ secrets.ADMIN_HOST_REGEX }}
+          ADMIN_HOSTS: ${{ secrets.ADMIN_HOSTS }}
+          SITE_DOMAIN_SUFFIXES: ${{ secrets.SITE_DOMAIN_SUFFIXES }}
+          DEFAULT_SITE: ${{ secrets.DEFAULT_SITE }}
+          DEFAULT_SITE_HOSTS: ${{ secrets.DEFAULT_SITE_HOSTS }}
           STUDIO_PASSWORD: ${{ secrets.STUDIO_PASSWORD }}
           AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          DEFAULT_AGENT_MODEL: ${{ vars.DEFAULT_AGENT_MODEL || 'anthropic:claude-opus-4-6' }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
