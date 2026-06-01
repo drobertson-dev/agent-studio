@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-langgraph}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-langgraph}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me}
       POSTGRES_DB: ${POSTGRES_DB:-langgraph}
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -31,7 +31,7 @@ services:
       context: ./apps/runtime
     restart: unless-stopped
     environment:
-      DATABASE_URI: postgres://${POSTGRES_USER:-langgraph}:${POSTGRES_PASSWORD:-langgraph}@postgres:5432/${POSTGRES_DB:-langgraph}
+      DATABASE_URI: postgres://${POSTGRES_USER:-langgraph}:${POSTGRES_PASSWORD:-change-me}@postgres:5432/${POSTGRES_DB:-langgraph}
       REDIS_URI: redis://redis:6379
       DEFAULT_AGENT_MODEL: ${DEFAULT_AGENT_MODEL:-anthropic:claude-opus-4-6}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}

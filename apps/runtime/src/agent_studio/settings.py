@@ -14,7 +14,7 @@ class RuntimeSettings(BaseSettings):
     )
     workspace_root: str = Field(default="/workspace", alias="WORKSPACE_ROOT")
     database_uri: str = Field(
-        default="postgresql://langgraph:langgraph@postgres:5432/langgraph",
+        default="postgresql://postgres:5432/langgraph",
         alias="DATABASE_URI",
     )
     redis_uri: str | None = Field(default=None, alias="REDIS_URI")
