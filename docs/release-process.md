@@ -48,4 +48,4 @@ git push origin vX.Y.Z
 
 ## Current Release
 
-Current release: `v0.1.0`
+Current release: `v0.1.1`

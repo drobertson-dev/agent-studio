@@ -1,6 +1,6 @@
 {
   "name": "agent-studio",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Self-hosted AI application studio with a Nuxt chat UI, DeepAgents/LangGraph runtime, live sites, runtime API routes, and Docker Compose deployment.",
   "private": true,
   "type": "module",

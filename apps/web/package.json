@@ -1,10 +1,10 @@
 {
   "name": "agent-studio-web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Nuxt chat UI for Agent Studio.",
   "private": true,
   "type": "module",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "author": "David Robertson",
   "scripts": {
     "build": "nuxt build",
@@ -48,7 +48,7 @@
     "lucide-vue-next": "^0.577.0",
     "marked": "^17.0.4",
     "motion-v": "^2.0.0",
-    "nuxt": "^4.3.1",
+    "nuxt": "^4.4.6",
     "nuxt-shiki": "0.3.2",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "reka-ui": "^2.9.0",

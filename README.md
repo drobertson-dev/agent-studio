@@ -59,7 +59,7 @@ The current repo is the reusable host. Specialized agents can be built on top of
 
 ## Project Status
 
-Current release: `v0.1.0`
+Current release: `v0.1.1`
 
 Agent Studio is early but usable. The initial release focuses on the self-hosted runtime, admin UI, host-based site publishing, dynamic API routes, persistence, Docker Compose deployment, and clear local development flows. Public APIs and internal extension points may change before `v1.0.0`.
 
